@@ -1,0 +1,31 @@
+{
+  "name": "sourcemap-sources-loader",
+  "version": "1.4.3",
+  "description": "Webpack loader that resolves relative paths in url() statements based on the original source file",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bholloway/sourcemap-sources-loader.git"
+  },
+  "keywords": [
+    "webpack",
+    "loader",
+    "source-map",
+    "sourcemap",
+    "sources",
+    "resolve"
+  ],
+  "author": "bholloway",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bholloway/sourcemap-sources-loader/issues"
+  },
+  "homepage": "https://github.com/bholloway/sourcemap-sources-loader",
+  "dependencies": {
+    "camelcase": "^1.2.1",
+    "loader-utils": "^0.2.11",
+    "lodash.assign": "^4.0.1",
+    "lodash.defaults": "^3.1.2",
+    "regex-parser": "^2.2.1"
+  }
+}
