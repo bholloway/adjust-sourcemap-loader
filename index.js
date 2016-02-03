@@ -19,7 +19,7 @@ var PACKAGE_NAME = require('./package.json').name,
     CODECS       = {
       absolute       : require('./codec/absolute'),
       bowerComponent : require('./codec/bower-component'),
-      fullyRelative  : require('./codec/fully-relative'),
+      outputRelative : require('./codec/output-relative'),
       projectRelative: require('./codec/project-relative'),
       webpackProtocol: require('./codec/webpack-protocol')
     };

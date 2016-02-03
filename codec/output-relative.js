@@ -3,10 +3,10 @@
 var path = require('path'),
     fs   = require('fs');
 
-var getContextDirectory = require('./utility/get-context-directory');
+var getOutputDirectory = require('./utility/get-context-directory');
 
 /**
- * Codec for relative paths with respect to the context directory
+ * Codec for relative paths with respect to the output directory
  * @type {{decode: decode, encode: encode}}
  */
 module.exports = {
@@ -17,7 +17,7 @@ module.exports = {
 function decode(relative) {
   /* jshint validthis:true */
   if (!path.isAbsolute(relative)) {
-    var base    = getContextDirectory(this),
+    var base    = getOutputDirectory(this),
         absFile = path.normalize(path.join(base, relative));
     return absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile() && absFile;
   }
@@ -25,7 +25,7 @@ function decode(relative) {
 
 function encode(absolute) {
   /* jshint validthis:true */
-  var base = getContextDirectory(this);
+  var base = getOutputDirectory(this);
   if (!base) {
     throw new Error('Cannot locate the Webpack output directory');
   }
@@ -33,4 +33,3 @@ function encode(absolute) {
     return path.relative(base, absolute);
   }
 }
-
