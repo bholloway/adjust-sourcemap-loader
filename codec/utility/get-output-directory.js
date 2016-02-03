@@ -5,9 +5,10 @@ var path = require('path'),
 
 var getContextDirectory = require('./get-context-directory');
 
-function getOutputDirectory(loader) {
-  var base    = (typeof loader.options.output === 'object') && loader.options.output.directory,
-      absBase = !!base && path.resolve(getContextDirectory(loader), base);
+function getOutputDirectory() {
+  /* jshint validthis:true */
+  var base    = (typeof this.options.output === 'object') && this.options.output.directory,
+      absBase = !!base && path.resolve(getContextDirectory.call(this), base);
   return !!absBase && fs.existsSync(absBase) && fs.statSync(absBase).isDirectory() && absBase;
 }
 

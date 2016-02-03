@@ -8,11 +8,13 @@ var getContextDirectory = require('./utility/get-context-directory');
 
 /**
  * Codec for relative paths with respect to the context directory, preceded by a webpack:// protocol
- * @type {{decode: decode, encode: encode}}
+ * @type {{name:string, decode: function, encode: function, root: function}}
  */
 module.exports = {
+  name  : 'bower-component',
   decode: decode,
-  encode: encode
+  encode: encode,
+  root  : getContextDirectory
 };
 
 function decode(uri) {
@@ -20,7 +22,7 @@ function decode(uri) {
   var analysis = /^([\w-]+)\s+\(bower component\)$/.exec(uri);
   if (analysis) {
     var moduleName = analysis[1],
-        basePath   = getContextDirectory(),
+        basePath   = getContextDirectory.call(this),
         bowerDir   = bowerDirectory.sync({cwd: basePath}),
         moduleJson = path.resolve(bowerDir, moduleName, 'bower.json'),
         isValid    = fs.existsSync(moduleJson) && fs.statSync(moduleJson).isFile();

@@ -13,6 +13,7 @@ var debug             = require('./lib/debug'),
     toRegExp          = require('./lib/toRegExp'),
     getError          = require('./lib/getError'),
     decodeSourcesWith = require('./lib/decodeSourcesWith'),
+    locateRootWith    = require('./lib/locateRootWith'),
     encodeSourcesWith = require('./lib/encodeSourcesWith');
 
 var PACKAGE_NAME = require('./package.json').name,
@@ -41,7 +42,7 @@ function sourcemapSourcesLoader(content, sourceMap) {
   // prefer loader query, else options object, else default values
   var options = defaults(loaderUtils.parseQuery(loader.query), loader.options[camelcase(PACKAGE_NAME)], {
     test  : null,
-    debug : false,
+    debug : undefined,
     format: false,
     codecs: {}
   });
@@ -54,8 +55,10 @@ function sourcemapSourcesLoader(content, sourceMap) {
 
   // source-map present and will be carried through
   var absoluteSources,
-      encodedSources;
-  if (sourceMap && (options.format !== 'remove')) {
+      encodedSources,
+      encodedRoot,
+      outputMap;
+  if (sourceMap) {
 
     // decode with the first valid codec
     absoluteSources = sourceMap.sources
@@ -64,16 +67,22 @@ function sourcemapSourcesLoader(content, sourceMap) {
     // check for decode errors
     throwErrors(absoluteSources);
 
-    // use the encoder where specified in 'format'
-    encodedSources = !!options.format && absoluteSources
-        .map(encodeSourcesWith.call(loader, options.codecs[options.format]));
+    // output map is a copy unless we are removing
+    outputMap = (options.format === 'remove') ? undefined : assign({}, sourceMap);
 
-    // check for encode errors
-    throwErrors(encodedSources);
+    // some change in format
+    if (!!options.format) {
 
-    // commit the change where valid
-    if (!!encodedSources) {
-      sourceMap.sources = encodedSources;
+      // use the encoder where specified in 'format'
+      encodedRoot = locateRootWith.call(loader, codecs[options.format])();
+      encodedSources = absoluteSources
+        .map(encodeSourcesWith.call(loader, codecs[options.format]));
+
+      // check for encode errors
+      throwErrors(encodedSources.concat(encodedRoot));
+
+      // commit the change
+      outputMap.sources = encodedSources;
     }
   }
 
@@ -81,11 +90,11 @@ function sourcemapSourcesLoader(content, sourceMap) {
   var isDebug = toRegExp(options.debug).test(loader.resourcePath);
   if (isDebug) {
     var inputSources = sourceMap && sourceMap.sources;
-    console.log(debug(loader, inputSources, absoluteSources, encodedSources));
+    console.log(debug(loader, inputSources, absoluteSources, encodedSources, encodedRoot));
   }
 
   // need to use callback when there are multiple arguments
-  loader.callback(null, content, sourceMap);
+  loader.callback(null, content, outputMap);
 
   /**
    * Where the given list is non-null and contains error instances then consolidate and throw

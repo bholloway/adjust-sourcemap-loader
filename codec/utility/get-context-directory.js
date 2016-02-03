@@ -2,8 +2,9 @@
 
 var path = require('path');
 
-function getContextDirectory(loader) {
-  var context = (typeof loader.options === 'object') && loader.options.context;
+function getContextDirectory() {
+  /* jshint validthis:true */
+  var context = (typeof this.options === 'object') && this.options.context;
   return !!context && path.resolve(context) || process.cwd();
 }
 
