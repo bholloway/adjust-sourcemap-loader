@@ -5,13 +5,17 @@
 'use strict';
 
 var loaderUtils = require('loader-utils'),
-    regexParser = require('regex-parser'),
     camelcase   = require('camelcase'),
     assign      = require('lodash.assign'),
     defaults    = require('lodash.defaults');
 
+var debug             = require('./lib/debug'),
+    toRegExp          = require('./lib/toRegExp'),
+    getError          = require('./lib/getError'),
+    decodeSourcesWith = require('./lib/decodeSourcesWith'),
+    encodeSourcesWith = require('./lib/encodeSourcesWith');
+
 var PACKAGE_NAME = require('./package.json').name,
-    REGEXP       = /\/[^\/]*\/\w*/,
     CODECS       = {
       absolute       : require('./codec/absolute'),
       bowerComponent : require('./codec/bower-component'),
@@ -38,48 +42,74 @@ function sourcemapSourcesLoader(content, sourceMap) {
   var options = defaults(loaderUtils.parseQuery(loader.query), loader.options[camelcase(PACKAGE_NAME)], {
     test  : null,
     debug : false,
-    format: false
+    format: false,
+    codecs: {}
   });
+
+  // prefer codec from options, else from internal library
+  var codecs = defaults({}, CODECS, options.codecs);
 
   // loader result is cacheable
   loader.cacheable();
 
+  // source-map present and will be carried through
+  var absoluteSources,
+      encodedSources;
+  if (sourceMap && (options.format !== 'remove')) {
+
+    // decode with the first valid codec
+    absoluteSources = sourceMap.sources
+      .map(decodeSourcesWith.call(loader, codecs));
+
+    // check for decode errors
+    throwErrors(absoluteSources);
+
+    // use the encoder where specified in 'format'
+    encodedSources = !!options.format && absoluteSources
+        .map(encodeSourcesWith.call(loader, options.codecs[options.format]));
+
+    // check for encode errors
+    throwErrors(encodedSources);
+
+    // commit the change where valid
+    if (!!encodedSources) {
+      sourceMap.sources = encodedSources;
+    }
+  }
+
   // debugging information
   var isDebug = toRegExp(options.debug).test(loader.resourcePath);
   if (isDebug) {
-    var message = [
-      '',
-      PACKAGE_NAME + ':',
-      '  ' + loader.resourcePath,
-      '   @ ' + loader.loaders.slice(loader.loaderIndex + 1).reverse().map(dotRequest).join('\n     '),
-      '  => ' + (sourceMap ? sourceMap.sources : ['(source-map absent)']).join('\n     ')
-    ].join('\n');
-
-    console.log(message);
+    var inputSources = sourceMap && sourceMap.sources;
+    console.log(debug(loader, inputSources, absoluteSources, encodedSources));
   }
 
-  // source-map present
-  if (sourceMap) {
+  // need to use callback when there are multiple arguments
+  loader.callback(null, content, sourceMap);
 
-    // TODO codec
+  /**
+   * Where the given list is non-null and contains error instances then consolidate and throw
+   * @throws Error
+   * @param {null|Array} candidates A possible Array with possible error elements
+   */
+  function throwErrors(candidates) {
+    var errors = !!candidates && candidates
+        .filter(testIsError)
+        .map(getMessage);
 
-    // need to use callback when there are multiple arguments
-    loader.callback(null, content, sourceMap);
-  }
-  // source-map absent
-  else {
-    return content;
+    var hasError = !!errors && errors.length;
+    if (hasError) {
+      throw getError('For resource:', loader.resourcePath, '\n', errors.join('\n'));
+    }
+
+    function testIsError(candidate) {
+      return !!candidate && (typeof candidate === 'object') && (candidate instanceof Error);
+    }
+
+    function getMessage(error) {
+      return error.message;
+    }
   }
 }
 
 module.exports = assign(sourcemapSourcesLoader, CODECS);
-
-function toRegExp(value) {
-  return ((typeof value === 'object') && (typeof value.test === 'function') && value) ||
-    ((typeof value === 'string') && REGEXP.test(value) && regexParser(value)) ||
-    /[^]*/;
-}
-
-function dotRequest(obj) {
-  return obj.request;
-}
