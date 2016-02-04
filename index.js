@@ -42,13 +42,14 @@ function sourcemapSourcesLoader(content, sourceMap) {
   // prefer loader query, else options object, else default values
   var options = defaults(loaderUtils.parseQuery(loader.query), loader.options[camelcase(PACKAGE_NAME)], {
     test  : null,
-    debug : undefined,
+    debug : false,
     format: false,
+    root  : false,
     codecs: {}
   });
 
-  // prefer codec from options, else from internal library
-  var codecs = defaults({}, CODECS, options.codecs);
+  // prefer codecs from options, else from internal library
+  var codecs = defaults({}, options.codecs, CODECS);
 
   // loader result is cacheable
   loader.cacheable();
@@ -74,7 +75,7 @@ function sourcemapSourcesLoader(content, sourceMap) {
     if (!!options.format) {
 
       // use the encoder where specified in 'format'
-      encodedRoot = locateRootWith.call(loader, codecs[options.format])();
+      encodedRoot = options.root && locateRootWith.call(loader, codecs[options.format])() || undefined;
       encodedSources = absoluteSources
         .map(encodeSourcesWith.call(loader, codecs[options.format]));
 
@@ -83,6 +84,7 @@ function sourcemapSourcesLoader(content, sourceMap) {
 
       // commit the change
       outputMap.sources = encodedSources;
+      outputMap.sourceRoot = encodedRoot;
     }
   }
 
