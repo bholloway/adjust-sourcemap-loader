@@ -10,11 +10,12 @@ var loaderUtils = require('loader-utils'),
     defaults    = require('lodash.defaults');
 
 var debug             = require('./lib/debug'),
-    toRegExp          = require('./lib/toRegExp'),
-    getError          = require('./lib/getError'),
-    decodeSourcesWith = require('./lib/decodeSourcesWith'),
-    locateRootWith    = require('./lib/locateRootWith'),
-    encodeSourcesWith = require('./lib/encodeSourcesWith');
+    toRegExp          = require('./lib/to-reg-exp'),
+    getError          = require('./lib/get-error'),
+    decodeSourcesWith = require('./lib/decode-sources-with'),
+    locateRootWith    = require('./lib/locate-root-with'),
+    encodeSourcesWith = require('./lib/encode-sources-with'),
+    reduceCodecs      = require('./lib/reduce-codecs');
 
 var PACKAGE_NAME = require('./package.json').name,
     CODECS       = {
@@ -42,15 +43,14 @@ function sourcemapSourcesLoader(content, sourceMap) {
 
   // prefer loader query, else options object, else default values
   var options = defaults(loaderUtils.parseQuery(loader.query), loader.options[camelcase(PACKAGE_NAME)], {
-    test  : null,
     debug : false,
     format: false,
     root  : false,
-    codecs: {}
+    codecs: []
   });
 
   // prefer codecs from options, else from internal library
-  var codecs = defaults({}, options.codecs, CODECS);
+  var codecs = defaults({}, [].concat(options.codecs).reduce(reduceCodecs, {}), CODECS);
 
   // loader result is cacheable
   loader.cacheable();

@@ -1,11 +1,11 @@
 {
-  "name": "sourcemap-sources-loader",
+  "name": "adjust-sourcemap-loader",
   "version": "0.0.1",
-  "description": "Webpack loader that resolves relative paths in url() statements based on the original source file",
+  "description": "Webpack loader that adjusts source maps",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bholloway/sourcemap-sources-loader.git"
+    "url": "git+https://github.com/bholloway/adjust-sourcemap-loader.git"
   },
   "keywords": [
     "webpack",
@@ -13,15 +13,17 @@
     "source-map",
     "sourcemap",
     "sources",
-    "resolve"
+    "resolve",
+    "adjust"
   ],
   "author": "bholloway",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/bholloway/sourcemap-sources-loader/issues"
+    "url": "https://github.com/bholloway/adjust-sourcemap-loader/issues"
   },
-  "homepage": "https://github.com/bholloway/sourcemap-sources-loader",
+  "homepage": "https://github.com/bholloway/adjust-sourcemap-loader",
   "dependencies": {
+    "assert": "^1.3.0",
     "camelcase": "^1.2.1",
     "loader-utils": "^0.2.11",
     "lodash.assign": "^4.0.1",
