@@ -22,6 +22,7 @@ var PACKAGE_NAME = require('./package.json').name,
       bowerComponent : require('./codec/bower-component'),
       outputRelative : require('./codec/output-relative'),
       projectRelative: require('./codec/project-relative'),
+      sourceRelative : require('./codec/source-relative'),
       webpackProtocol: require('./codec/webpack-protocol')
     };
 
