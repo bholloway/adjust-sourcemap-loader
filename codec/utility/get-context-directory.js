@@ -1,6 +1,7 @@
 'use strict';
 
-var path = require('path');
+var path       = require('path'),
+    objectPath = require('object-path');
 
 /**
  * Infer the compilation context directory from options.
@@ -10,7 +11,7 @@ var path = require('path');
  */
 function getContextDirectory() {
   /* jshint validthis:true */
-  var context = (typeof this.options === 'object') && this.options.context;
+  var context = objectPath.get(this, 'options.context');
   return !!context && path.resolve(context) || process.cwd();
 }
 

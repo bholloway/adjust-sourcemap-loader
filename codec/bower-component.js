@@ -12,9 +12,7 @@ var getContextDirectory = require('./utility/get-context-directory');
  */
 module.exports = {
   name  : 'bower-component',
-  decode: decode,
-  encode: encode,
-  root  : getContextDirectory
+  decode: decode
 };
 
 /**
@@ -40,17 +38,8 @@ function decode(uri) {
         throw new Error('Unsupported "main" field in bower.json for package "' + moduleName + '"');
       }
       else {
-        return path.resolve(bowerDir, moduleName, moduleMain);
+        return path.resolve(bowerDir, moduleName, moduleMain[0]);
       }
     }
   }
-}
-
-/**
- * Encode the given file path.
- * @throws Error Encoding is not supported
- * @this {{options: object}} A loader or compilation
- */
-function encode() {
-  throw new Error('Codec does not support encoding');
 }

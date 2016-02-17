@@ -1,7 +1,8 @@
 'use strict';
 
-var path = require('path'),
-    fs   = require('fs');
+var path       = require('path'),
+    fs         = require('fs'),
+    objectPath = require('object-path');
 
 var getContextDirectory = require('./get-context-directory');
 
@@ -13,7 +14,7 @@ var getContextDirectory = require('./get-context-directory');
  */
 function getOutputDirectory() {
   /* jshint validthis:true */
-  var base    = (typeof this.options.output === 'object') && this.options.output.directory,
+  var base    = objectPath.get(this, 'options.output.directory'),
       absBase = !!base && path.resolve(getContextDirectory.call(this), base),
       isValid = !!absBase && fs.existsSync(absBase) && fs.statSync(absBase).isDirectory();
   return isValid ? absBase : undefined;

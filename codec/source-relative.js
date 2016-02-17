@@ -23,7 +23,7 @@ function decode(relative) {
   /* jshint validthis:true */
   if (!path.isAbsolute(relative)) {
     var base    = this.context,
-        absFile = path.normalize(path.join(base, relative)),
+        absFile = !!base && path.normalize(path.join(base, relative)),
         isValid = !!absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile();
     return isValid && absFile;
   }

@@ -1,8 +1,9 @@
 module.exports = {
-  absolute       : require('./absolute'),
-  bowerComponent : require('./bower-component'),
-  outputRelative : require('./output-relative'),
-  projectRelative: require('./project-relative'),
-  sourceRelative : require('./source-relative'),
-  webpackProtocol: require('./webpack-protocol')
+  absolute        : require('./absolute'),
+  bowerComponent  : require('./bower-component'),
+  outputRelative  : require('./output-relative'),
+  projectRelative : require('./project-relative'),
+  sourceRelative  : require('./source-relative'),
+  webpackProtocol : require('./webpack-protocol'),
+  webpackBootstrap: require('./webpack-bootstrap')
 };
