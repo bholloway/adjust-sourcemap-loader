@@ -17,6 +17,11 @@ module.exports = {
   root  : getContextDirectory
 };
 
+/**
+ * Decode the given uri.
+ * @this {{options: object}} A loader or compilation
+ * @returns {boolean|string} False where unmatched else the decoded path
+ */
 function decode(uri) {
   /* jshint validthis:true */
   var analysis = /^([\w-]+)\s+\(bower component\)$/.exec(uri);
@@ -41,6 +46,11 @@ function decode(uri) {
   }
 }
 
+/**
+ * Encode the given file path.
+ * @throws Error Encoding is not supported
+ * @this {{options: object}} A loader or compilation
+ */
 function encode() {
   throw new Error('Codec does not support encoding');
 }

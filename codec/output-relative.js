@@ -3,7 +3,7 @@
 var path = require('path'),
     fs   = require('fs');
 
-var getOutputDirectory = require('./utility/get-context-directory');
+var getOutputDirectory = require('./utility/get-output-directory');
 
 /**
  * Codec for relative paths with respect to the output directory
@@ -16,15 +16,27 @@ module.exports = {
   root  : getOutputDirectory
 };
 
+/**
+ * Decode the given uri.
+ * @this {{options: object}} A loader or compilation
+ * @returns {boolean|string} False where unmatched else the decoded path
+ */
 function decode(relative) {
   /* jshint validthis:true */
   if (!path.isAbsolute(relative)) {
     var base    = getOutputDirectory.call(this),
-        absFile = path.normalize(path.join(base, relative));
-    return absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile() && absFile;
+        absFile = !!base && path.normalize(path.join(base, relative)),
+        isValid = !!absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile();
+    return isValid && absFile;
   }
 }
 
+/**
+ * Encode the given file path.
+ * @this {{options: object}} A loader or compilation
+ * @param {string} absolute An absolute file path to encode
+ * @returns {string} A uri
+ */
 function encode(absolute) {
   /* jshint validthis:true */
   var base = getOutputDirectory.call(this);
