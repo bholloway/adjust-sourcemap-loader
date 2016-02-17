@@ -3,7 +3,7 @@
 var projectRelative = require('./project-relative');
 
 /**
- * Codec for relative paths with respect to the context directory, preceded by a webpack:// protocol
+ * Codec for relative paths with respect to the context directory, preceded by a webpack:// protocol.
  * @type {{name:string, decode: function, encode: function, root: function}}
  */
 module.exports = {
@@ -16,6 +16,7 @@ module.exports = {
 /**
  * Decode the given uri.
  * @this {{options: object}} A loader or compilation
+ * @param {string} uri A source uri to decode
  * @returns {boolean|string} False where unmatched else the decoded path
  */
 function decode(uri) {

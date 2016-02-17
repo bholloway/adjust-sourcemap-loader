@@ -1,9 +1,10 @@
 'use strict';
 
-var path = require('path');
+var path = require('path'),
+    fs   = require('fs');
 
 /**
- * Codec for absolute paths
+ * Codec for absolute paths.
  * @type {{name:string, decode: function, encode: function, root: function}}
  */
 module.exports = {
@@ -15,11 +16,14 @@ module.exports = {
 
 /**
  * Decode the given uri.
+ * Any path with leading slash is tested in an absolute sense.
+ * Exclude module paths containing `~`.
  * @this {{options: object}} A loader or compilation
+ * @param {string} uri A source uri to decode
  * @returns {boolean|string} False where unmatched else the decoded path
  */
-function decode(input) {
-  return path.isAbsolute(input) && input;
+function decode(uri) {
+  return path.isAbsolute(uri) && !/~/.test(uri) && fs.existsSync(uri) && fs.statSync(uri).isFile() && uri;
 }
 
 /**

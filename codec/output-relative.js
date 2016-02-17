@@ -6,7 +6,7 @@ var path = require('path'),
 var getOutputDirectory = require('./utility/get-output-directory');
 
 /**
- * Codec for relative paths with respect to the output directory
+ * Codec for relative paths with respect to the output directory.
  * @type {{name:string, decode: function, encode: function, root: function}}
  */
 module.exports = {
@@ -18,14 +18,17 @@ module.exports = {
 
 /**
  * Decode the given uri.
+ * Any path with or without leading slash is tested against context directory.
+ * Exclude module paths containing `~`.
  * @this {{options: object}} A loader or compilation
+ * @param {string} uri A source uri to decode
  * @returns {boolean|string} False where unmatched else the decoded path
  */
-function decode(relative) {
+function decode(uri) {
   /* jshint validthis:true */
-  if (!path.isAbsolute(relative)) {
+  if (!/~/.test(uri)) {
     var base    = getOutputDirectory.call(this),
-        absFile = !!base && path.normalize(path.join(base, relative)),
+        absFile = !!base && path.normalize(path.join(base, uri)),
         isValid = !!absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile();
     return isValid && absFile;
   }

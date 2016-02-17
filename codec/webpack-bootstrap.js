@@ -1,8 +1,8 @@
 'use strict';
 
 /**
- * Codec for relative paths with respect to the context directory, preceded by a webpack:// protocol
- * @type {{name:string, decode: function, encode: function, root: function}}
+ * Codec for webpack generated bootstrap code.
+ * @type {{name:string, decode:function, abstract:boolean}}
  */
 module.exports = {
   name    : 'webpack-bootstrap',
@@ -11,12 +11,11 @@ module.exports = {
 };
 
 /**
- * Decode the given uri.
+ * Validate the given uri (abstract).
  * @this {{options: object}} A loader or compilation
- * @returns {boolean|string} False where unmatched else the decoded path
+ * @param {string} uri A source uri to decode
+ * @returns {boolean|string} False where unmatched else True
  */
 function decode(uri) {
-  /* jshint validthis:true */
-  var analysis = /^webpack\/bootstrap\s+\w{20}$/.exec(uri);
-  return !!analysis;
+  return /^webpack\/bootstrap\s+\w{20}$/.test(uri);
 }
