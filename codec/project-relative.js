@@ -6,7 +6,7 @@ var path = require('path'),
 var getContextDirectory = require('./utility/get-context-directory');
 
 /**
- * Codec for relative paths with respect to the context directory
+ * Codec for relative paths with respect to the context directory.
  * @type {{name:string, decode: function, encode: function, root: function}}
  */
 module.exports = {
@@ -16,15 +16,27 @@ module.exports = {
   root  : getContextDirectory
 };
 
-function decode(relative) {
+/**
+ * Decode the given uri.
+ * Any path with or without leading slash is tested against context directory.
+ * @this {{options: object}} A loader or compilation
+ * @param {string} uri A source uri to decode
+ * @returns {boolean|string} False where unmatched else the decoded path
+ */
+function decode(uri) {
   /* jshint validthis:true */
-  if (!path.isAbsolute(relative)) {
-    var base    = getContextDirectory.call(this),
-        absFile = path.normalize(path.join(base, relative));
-    return absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile() && absFile;
-  }
+  var base    = getContextDirectory.call(this),
+      absFile = path.normalize(path.join(base, uri)),
+      isValid = !!absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile();
+  return isValid && absFile;
 }
 
+/**
+ * Encode the given file path.
+ * @this {{options: object}} A loader or compilation
+ * @param {string} absolute An absolute file path to encode
+ * @returns {string} A uri
+ */
 function encode(absolute) {
   /* jshint validthis:true */
   var base = getContextDirectory.call(this);
@@ -32,7 +44,6 @@ function encode(absolute) {
     throw new Error('Cannot locate the Webpack output directory');
   }
   else {
-    return path.relative(base, absolute);
+    return '/' + path.relative(base, absolute);
   }
 }
-
