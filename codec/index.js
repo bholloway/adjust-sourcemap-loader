@@ -1,10 +1,11 @@
-module.exports = {
-  absolute        : require('./absolute'),
-  bowerComponent  : require('./bower-component'),
-  npmModule       : require('./npm-module'),
-  outputRelative  : require('./output-relative'),
-  projectRelative : require('./project-relative'),
-  sourceRelative  : require('./source-relative'),
-  webpackProtocol : require('./webpack-protocol'),
-  webpackBootstrap: require('./webpack-bootstrap')
-};
+module.exports = [
+  require('./webpack-protocol'),
+  require('./webpack-bootstrap'),
+  require('./bower-component'),
+  require('./npm-module'),
+  // insert more codecs above for any special characters in URIs
+  require('./output-relative'),
+  require('./project-relative'),
+  require('./source-relative'),
+  require('./absolute')
+];

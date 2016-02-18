@@ -19,19 +19,16 @@ module.exports = {
 /**
  * Decode the given uri.
  * Any path with or without leading slash is tested against context directory.
- * Exclude module paths containing `~`.
  * @this {{options: object}} A loader or compilation
  * @param {string} uri A source uri to decode
  * @returns {boolean|string} False where unmatched else the decoded path
  */
 function decode(uri) {
   /* jshint validthis:true */
-  if (!/~/.test(uri)) {
-    var base    = getOutputDirectory.call(this),
-        absFile = !!base && path.normalize(path.join(base, uri)),
-        isValid = !!absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile();
-    return isValid && absFile;
-  }
+  var base    = getOutputDirectory.call(this),
+      absFile = !!base && path.normalize(path.join(base, uri)),
+      isValid = !!absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile();
+  return isValid && absFile;
 }
 
 /**

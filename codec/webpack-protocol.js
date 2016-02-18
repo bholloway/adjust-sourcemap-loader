@@ -10,7 +10,7 @@ module.exports = {
   name  : 'webpack-protocol',
   decode: decode,
   encode: encode,
-  root  : projectRelative.root
+  root  : root
 };
 
 /**
@@ -34,4 +34,12 @@ function decode(uri) {
 function encode(absolute) {
   /* jshint validthis:true */
   return 'webpack://' + projectRelative.encode.call(this, absolute);
+}
+
+/**
+ * The source-map root where relevant.
+ * @this {{options: object}} A loader or compilation
+ * @returns {string|undefined} The source-map root applicable to any encoded uri
+ */
+function root() {
 }

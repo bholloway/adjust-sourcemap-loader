@@ -24,12 +24,10 @@ module.exports = {
  */
 function decode(uri) {
   /* jshint validthis:true */
-  if (!/~/.test(uri)) {
-    var base    = this.context,
-        absFile = !!base && path.normalize(path.join(base, uri)),
-        isValid = !!absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile();
-    return isValid && absFile;
-  }
+  var base    = this.context,
+      absFile = !!base && path.normalize(path.join(base, uri)),
+      isValid = !!absFile && fs.existsSync(absFile) && fs.statSync(absFile).isFile();
+  return isValid && absFile;
 }
 
 /**

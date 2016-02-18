@@ -17,5 +17,5 @@ module.exports = {
  * @returns {boolean|string} False where unmatched else True
  */
 function decode(uri) {
-  return /^([\w-]+)\s+\(bower component\)$/.test(uri);
+  return /^\/?([\w-]+)\s+\(bower component\)$/.test(uri);
 }
