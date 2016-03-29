@@ -3,7 +3,7 @@ module.exports = [
   require('./webpack-bootstrap'),
   require('./bower-component'),
   require('./npm-module'),
-  // insert more codecs above for any special characters in URIs
+  /* insert here any additional special character CODECs */
   require('./output-relative'),
   require('./project-relative'),
   require('./source-relative'),
