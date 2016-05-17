@@ -3,8 +3,7 @@
 var fs   = require('fs'),
     path = require('path');
 
-var usage = {},
-    cache = {};
+var cache;
 
 /**
  * Perform <code>path.relative()</code> but try to detect and correct sym-linked node modules.
@@ -13,99 +12,107 @@ var usage = {},
  */
 function enhancedRelative(from, to) {
 
-  // cache miss
-  var isCached = (to in cache);
-  if (!isCached) {
-    var relative    = path.relative(from, to),
-        isOutside   = /^\.{2}/.test(relative),
-        packageInfo = isOutside && packageOf(to);
+  // relative path
+  var relative = path.relative(from, to);
 
-    // could be a linked project in node_modules of the 'from' directory
-    if (packageInfo) {
-      var packagePath  = findLinkedWithinDirectory(from, packageInfo.name),
-          resourcePath = !!packagePath && path.join(packagePath, packageInfo.path),
-          isPresent    = !!resourcePath && fs.existsSync(resourcePath) && fs.statSync(resourcePath).isFile();
+  // trailing is the relative path portion without any '../'
+  var trailing = relative.replace(/^\.{2}[\\\/]/, ''),
+      leading  = to.replace(trailing, '');
 
-      // append a hash to avoid path collision
-      if (isPresent) {
-        relative = path.relative(from, resourcePath);
+  // within project is what we want
+  var isInProject = (relative === trailing);
+  if (isInProject) {
+    return relative;
+  }
+  // otherwise look at symbolic linked modules
+  else {
+    var splitTrailing = trailing.split(/[\\\/]/);
+
+    // ensure failures can retry with fresh cache
+    for (var i = cache ? 2 : 1, foundPath = false; (i > 0) && !foundPath; i--) {
+
+      // ensure cache
+      cache = cache || indexLinkedModules(from);
+
+      // take elements from the trailing path and append them the the leading path in an attempt to find a package.json
+      for (var j = 0; (j < splitTrailing.length) && !foundPath; j++) {
+
+        // find the name of packages in the actual file location
+        //  start at the lowest concrete directory that appears in the relative path
+        var packagePath     = path.join.apply(path, [leading].concat(splitTrailing.slice(0, j + 1))),
+            packageJsonPath = path.join(packagePath, 'package.json'),
+            packageName     = fs.existsSync(packageJsonPath) && require(packageJsonPath).name;
+
+        // lookup any package name in the cache
+        var linkedPackagePath = !!packageName && cache[packageName];
+        if (linkedPackagePath) {
+
+          // the remaining portion of the trailing path, not including the package path
+          var remainingPath = path.join.apply(path, splitTrailing.slice(j + 1));
+
+          // validate the remaining path in the linked location
+          //  failure implies we will keep trying nested sym-linked packages
+          var linkedFilePath = path.join(linkedPackagePath, remainingPath),
+              isValid        = !!linkedFilePath && fs.existsSync(linkedFilePath) &&
+                fs.statSync(linkedFilePath).isFile();
+
+          // path is found where valid
+          foundPath = isValid && linkedFilePath;
+        }
       }
+
+      // cache cannot be trusted if a file can't be found
+      //  set the cache to false to trigger its rebuild
+      cache = !!foundPath && cache;
     }
 
-    // populate the cache
-    usage[to] = 0;
-    cache[to] = relative;
+    // the relative path should now be within the project
+    return foundPath ? path.relative(from, foundPath) : relative;
   }
-
-  // add suffix on more than one usage (post increment)
-  var suffix = (usage[to]++) ? ('#' + usage[to]) : '';
-
-  // read from cache
-  return cache[to] + suffix;
 }
 
 module.exports = enhancedRelative;
 
 /**
- * Get the package name of the given candidate file by searching upwards until a package.json is found.
- * May result in a long search if package.json is not present.
- * @param {string} candidate A file that is contained within a package
- * @param {string} [directory] Optional directory to look in, or use candidate directory where omitted
- * @returns {boolean|{name:string, path:string}} The particulars of the package else false where not found
+ * Make a hash of linked modules within the given directory by breadth-first search.
+ * @param {string} directory A path to start searching
+ * @returns {object} A collection of sym-linked paths within the project keyed by their package name
  */
-function packageOf(candidate, directory) {
+function indexLinkedModules(directory) {
+  var buffer = listSymLinkedModules(directory),
+      hash   = {};
 
-  // ensure directory
-  directory = directory || path.dirname(candidate);
+  // while there are items in the buffer
+  while (buffer.length > 0) {
+    var modulePath      = buffer.shift(),
+        packageJsonPath = path.join(modulePath, 'package.json'),
+        packageName     = fs.existsSync(packageJsonPath) && require(packageJsonPath).name;
+    if (packageName) {
 
-  // check for package.json
-  var isDirectory = fs.existsSync(directory) && fs.statSync(directory).isDirectory(),
-      packageFile = !!isDirectory && path.join(directory, 'package.json'),
-      isPackage   = !!packageFile && fs.existsSync(packageFile);
-  if (isPackage) {
-    var name          = require(packageFile).name,
-        remainingPath = path.relative(directory, candidate);
-    return {
-      name: name,
-      path: remainingPath
-    };
-  }
-  // otherwise recurse upwards
-  else if (isDirectory) {
-    var upOneDirectory = path.normalize(path.join(directory, '..'));
-    return packageOf(candidate, upOneDirectory);
-  }
-  // finally fail
-  else {
-    return false;
-  }
-}
+      // add this path keyed by package name, so long as it doesn't exist at a lower level
+      hash[packageName] = hash[packageName] || modulePath;
 
-/**
- * Find the given package linked somewhere in the given base directory.
- * Presumes that the package name will be identical to its node modules directory name.
- * @param {string} basePath A directory that may have node modules
- * @param {string} packageName A package name
- * @returns {boolean|string} The linked package within the basePath else false on not found
- */
-function findLinkedWithinDirectory(basePath, packageName) {
-  var modulesPath    = path.join(basePath, 'node_modules'),
-      hasNodeModules = fs.existsSync(modulesPath) && fs.statSync(modulesPath).isDirectory(),
-      names          = !!hasNodeModules && fs.readdirSync(modulesPath);
-  return names && names.reduce(eachName, false);
-
-  function eachName(reduced, subdirectory) {
-    if (reduced) {
-      return reduced;
+      // detect nested module and push to the buffer (breadth-first)
+      buffer.push.apply(buffer, listSymLinkedModules(modulePath));
     }
-    else {
-      var modulePath = path.join(modulesPath, subdirectory);
-      if (subdirectory === packageName) {
-        return modulePath;
-      }
-      else {
-        return fs.statSync(modulePath).isSymbolicLink() && findLinkedWithinDirectory(modulePath, packageName);
-      }
+  }
+  return hash;
+
+  function listSymLinkedModules(directory) {
+    var modulesPath    = path.join(directory, 'node_modules'),
+        hasNodeModules = fs.existsSync(modulesPath) && fs.statSync(modulesPath).isDirectory(),
+        subdirectories = !!hasNodeModules && fs.readdirSync(modulesPath) || [];
+
+    return subdirectories
+      .map(joinDirectory)
+      .filter(testIsSymLink);
+
+    function joinDirectory(subdirectory) {
+      return path.join(modulesPath, subdirectory);
+    }
+
+    function testIsSymLink(directory) {
+      return fs.lstatSync(directory).isSymbolicLink();  // must use lstatSync not statSync
     }
   }
 }
