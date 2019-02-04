@@ -4,7 +4,7 @@
  */
 'use strict';
 
-var assign = require('lodash.assign');
+var assign = require('lodash/assign');
 
 module.exports = assign(require('./lib/loader'), {
   moduleFilenameTemplate: require('./lib/module-filename-template'),
