@@ -1,6 +1,6 @@
 {
   "name": "adjust-sourcemap-loader",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0",
   "description": "Webpack loader that adjusts source maps",
   "main": "index.js",
   "repository": {
