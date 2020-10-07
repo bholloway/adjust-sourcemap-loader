@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "description": "Webpack loader that adjusts source maps",
   "main": "index.js",
+  "engines": {
+    "node": ">=8.9"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bholloway/adjust-sourcemap-loader.git"
@@ -23,7 +26,7 @@
   },
   "homepage": "https://github.com/bholloway/adjust-sourcemap-loader",
   "dependencies": {
-    "loader-utils": "1.2.3",
+    "loader-utils": "^2.0.0",
     "object-path": "0.11.4",
     "regex-parser": "2.2.10"
   },
