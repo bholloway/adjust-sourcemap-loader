@@ -27,7 +27,6 @@
   "homepage": "https://github.com/bholloway/adjust-sourcemap-loader",
   "dependencies": {
     "loader-utils": "^2.0.0",
-    "object-path": "0.11.4",
     "regex-parser": "2.2.10"
   },
   "devDependencies": {
