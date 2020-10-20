@@ -1,7 +1,7 @@
 'use strict';
 
-var path       = require('path'),
-    fs         = require('fs');
+var path = require('path'),
+    fs   = require('fs');
 
 var getContextDirectory = require('./get-context-directory');
 

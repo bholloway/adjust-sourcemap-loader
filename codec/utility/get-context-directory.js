@@ -1,6 +1,6 @@
 'use strict';
 
-var path       = require('path');
+var path = require('path');
 
 /**
  * Infer the compilation context directory from options.
