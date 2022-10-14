@@ -4,7 +4,7 @@
   "description": "Webpack loader that adjusts source maps",
   "main": "index.js",
   "engines": {
-    "node": ">=8.9"
+    "node": ">=12"
   },
   "repository": {
     "type": "git",
@@ -26,11 +26,11 @@
   },
   "homepage": "https://github.com/bholloway/adjust-sourcemap-loader",
   "dependencies": {
-    "loader-utils": "^2.0.0",
+    "loader-utils": "^3.2.0",
     "regex-parser": "^2.2.11"
   },
   "devDependencies": {
-    "jshint": "^2.12.0"
+    "jshint": "^2.13.5"
   },
   "scripts": {
     "lint": "jshint index.js lib codec"
